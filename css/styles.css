@@ -477,7 +477,7 @@ h1, h2, h3, h4 { font-family: var(--font-head); line-height: 1.2; color: var(--n
     position: fixed; inset: 0; background: rgba(10, 16, 30, .5); z-index: 150;
     opacity: 0; visibility: hidden; transition: opacity .3s;
   }
-  .nav-backdrop.show { opacity: 1; visibility: visible; }
+  .nav-backdrop.show { opacity: 1; visibility: visible; z-index: 1; }
 }
 
 @media (max-width: 620px) {
