@@ -220,19 +220,73 @@
     counters.forEach((c) => (c.textContent = c.dataset.count + (c.dataset.suffix || "")));
   }
 
-  /* ---------- Contact form (demo handling) ---------- */
+  /* ---------- Contact form with EmailJS ---------- */
   const form = $("#contactForm");
   const note = $("#formNote");
+  const formError = $("#formError");
+  const submitBtn = $("#submitBtn");
+  
   if (form) {
-    form.addEventListener("submit", (e) => {
+    // Initialize EmailJS
+    emailjs.init({
+      publicKey: "D8QAc9PzthAb9fmsX", // EmailJS public key
+      limitRate: {
+        id: "korizm_contact_form",
+        throttle: 60000, // Limit to 1 email per minute per user
+      },
+    });
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      
       if (!form.checkValidity()) {
         form.reportValidity();
         return;
       }
-      note.hidden = false;
-      form.reset();
-      setTimeout(() => (note.hidden = true), 6000);
+
+      // Disable submit button and show loading state
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Sending...";
+
+      try {
+        // Send email using EmailJS
+        await emailjs.send(
+          "korizm_contact_form", // Service ID
+          "template_korizm", // Template ID
+          {
+            to_email: "korizmglobal@gmail.com", // Your email
+            from_name: form.name.value,
+            from_email: form.email.value,
+            phone: form.phone.value || "Not provided",
+            program: form.program.value,
+            message: form.message.value,
+          }
+        );
+
+        // Show success message
+        if (formError) formError.hidden = true;
+        note.hidden = false;
+        form.reset();
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+
+        // Hide success message after 6 seconds
+        setTimeout(() => (note.hidden = true), 6000);
+      } catch (error) {
+        console.error("Error sending email:", error);
+        if (formError) {
+          formError.hidden = false;
+          note.hidden = true;
+        }
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+
+        // Hide error message after 6 seconds
+        setTimeout(() => {
+          if (formError) formError.hidden = true;
+        }, 6000);
+      }
     });
   }
 
